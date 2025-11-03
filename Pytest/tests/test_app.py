@@ -19,6 +19,9 @@ def test_app(monkeypatch):
         1. 獨立的 Flask 測試應用，並把 app.py 內的 engine 指向記憶體 SQLite
         2. 替換 render_template 改回傳純文字
     """
+    monkeypatch.setenv('ADMIN_USERNAME', 'admin')
+    monkeypatch.setenv('ADMIN_PASSWORD', 'admin123')
+
     memory_engine = create_engine('sqlite+pysqlite:///:memory:', future=True)     # 用記憶體 SQLite，避免汙染本機 app.db
     monkeypatch.setattr(app_mod, 'engine', memory_engine, raising=True)     # 替換 app engine
 
