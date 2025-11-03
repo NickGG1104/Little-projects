@@ -36,7 +36,7 @@ def test_concat():
 def test_concat_failed():
     str_1 = 555
     str_2 = 666
-    with pytest.raises(TypeError):  # 以下範圍內的程式碼應該要拋出 Type Error
+    with pytest.raises(TypeError):  # 此處的代碼如果沒有拋出<錯誤型態>，pytest會認為測試失敗
         concat(str_1=str_1, str_2=str_2)
 
 
