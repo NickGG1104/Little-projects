@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -24,17 +25,25 @@ class User(Base, UserMixin):
         return check_password_hash(self.password_hash, raw)
 
 
-# SQLite（同目錄 app.db）
 engine = create_engine("sqlite:///app.db", echo=False, future=True)
 
 
 def init_db() -> None:
+    """cmd
+        set ADMIN_USERNAME=my_admin
+        set ADMIN_PASSWORD=my_strong_password
+        python app.py
+    """
     Base.metadata.create_all(engine)
+
+    # 於環境變數讀預設帳密，沒有設的話用預設值
+    default_username = os.getenv('ADMIN_USERNAME', 'admin')
+    default_password = os.getenv('ADMIN_PASSWORD', 'admin123')
+
     with Session(engine) as s:
-        # 建立一個預設帳號：帳號 admin / 密碼 admin123（Demo 用，請改）
-        if not s.scalar(select(User).where(User.username == "admin")):
-            u = User(username="admin")
-            u.set_password("admin123")
+        if not s.scalar(select(User).where(User.username == default_username)):
+            u = User(username=default_username)
+            u.set_password(default_password)
             s.add(u)
             s.commit()
 
