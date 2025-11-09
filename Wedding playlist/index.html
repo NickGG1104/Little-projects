@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>WEDDING XXX & XXX</title>
+    <style>
+        body {
+            font-family: "Noto Sans TC", Arial, sans-serif;
+            margin: 0;
+            padding: 40px 16px;
+            background: radial-gradient(circle at top, #ffeef5 0, #fffaf4 45%, #f8f4ff 100%);
+            color: #4b4b4b;
+        }
+
+        h1 {
+            text-align: center;
+            letter-spacing: 0.12em;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #b6466f;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .container {
+            max-width: 1120px;
+            margin: 0 auto;
+            display: flex;
+            gap: 24px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            backdrop-filter: blur(6px);
+        }
+
+        .playlist {
+            min-width: 260px;
+            max-width: 300px;
+            border-right: 1px solid #f0e1ea;
+            padding-right: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 620px;
+            overflow-y: auto;
+        }
+
+        .playlist button {
+            width: 300px;
+            max-width: 100%;
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid #f0d5df;
+            background: linear-gradient(135deg, #fffefe, #fff6fa);
+            cursor: pointer;
+            text-align: left;
+            font-size: 14px;
+            color: #7a4b58;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .playlist button::before {
+            content: "♪";
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        .playlist button:nth-child(1)::before,
+        .playlist button:nth-child(2)::before {
+            content: "▶";
+        }
+
+        .playlist button:hover {
+            background: linear-gradient(135deg, #ffe9f1, #fff8f1);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(182, 70, 111, 0.16);
+        }
+
+        .playlist button.active {
+            background: linear-gradient(135deg, #ffc9dd, #ffe5f1);
+            border-color: #e38aa8;
+            color: #5c2c3f;
+            box-shadow: 0 6px 14px rgba(179, 79, 115, 0.25);
+        }
+
+        #player-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-left: 4px;
+        }
+
+        #player-area video,
+        #player-area audio,
+        #player-area img,
+        #player-area iframe {
+            width: 100%;
+            max-width: 720px;
+            border-radius: 16px;
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.25);
+        }
+
+        #player-area iframe {
+            min-height: 480px;
+            border: none;
+        }
+
+        #player-area img {
+            height: auto;
+            object-fit: contain;
+        }
+
+        /* 手機版排版：上下排列 */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            .container {
+                flex-direction: column;
+                padding: 16px;
+            }
+
+            .playlist {
+                border-right: none;
+                border-bottom: 1px solid #f0e1ea;
+                padding-right: 0;
+                padding-bottom: 12px;
+                max-height: 260px;
+            }
+
+            .playlist button {
+                width: 100%;
+            }
+
+            #player-area {
+                padding-left: 0;
+                padding-top: 8px;
+            }
+        }
+    </style>
+
+</head>
+<body>
+<h1>WEDDING XXX & XXX</h1>
+
+<div class="container">
+    <!-- 左側清單 -->
+    <div class="playlist">
+        <button
+                class="active"
+                data-type="video"
+                data-src="1_wedding_waiting/wedding_waiting.MP4"
+                data-loop="true">
+            01 婚禮等待前｜影片
+        </button>
+
+        <button
+                data-type="video"
+                data-src="2_grow_up/grow_up.mp4"
+                data-loop="false">
+            02 成長｜影片
+        </button>
+
+        <button
+                data-type="audio"
+                data-src="3_first_entry/first_entry.mp3"
+                data-loop="true">
+            03 第一次進場｜音樂
+        </button>
+
+        <button
+                data-type="audio"
+                data-src="4_champagne/champagne.mp3"
+                data-loop="true">
+            04 香檳塔誓言｜音樂
+        </button>
+
+        <button
+                data-type="audio"
+                data-src="5_second_entry/second_entry.mp3"
+                data-loop="true">
+            05 第二次進場｜音樂
+        </button>
+
+        <button
+                data-type="audio"
+                data-src="6_game/game.mp3"
+                data-loop="true">
+            06 傳傳樂｜音樂
+        </button>
+
+        <button
+                data-type="audio"
+                data-src="4_champagne/champagne.mp3"
+                data-loop="true">
+            07 捧花抽大小｜音樂
+        </button>
+
+        <button
+                data-type="audio"
+                data-src="8_game_over/game_over.mp3"
+                data-loop="true">
+            08 小遊戲結束後｜音樂
+        </button>
+
+        <button
+            class="playlist-open-btn"
+            data-type="image"
+            onclick="window.open('3_first_entry/bg_champagne.png', '_blank')">
+            附件 第一次進場｜圖片
+        </button>
+
+        <button
+            class="playlist-open-btn"
+            data-type="image"
+            onclick="window.open('4_champagne/bg_champagne.jpeg', '_blank')">
+            附件 香檳塔誓言｜圖片
+        </button>
+
+        <button
+            class="playlist-open-btn"
+            onclick="window.open('6_game/pdf_game.pdf', '_blank')">
+            附件 傳傳樂｜PDF
+        </button>
+    </div>
+
+    <!-- 右側播放器 -->
+    <div id="player-area">
+        <video id="media" controls autoplay loop muted>
+            <source src="1_wedding_waiting/wedding_waiting.MP4" type="video/mp4">
+            您的瀏覽器不支援 HTML5 影片。
+        </video>
+    </div>
+</div>
+
+
+<script>
+    const buttons = document.querySelectorAll('.playlist button');
+    const playerArea = document.getElementById('player-area');
+
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // 切換 active 樣式
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const type = btn.getAttribute('data-type');   // video / audio
+            const src = btn.getAttribute('data-src');    // 檔案路徑
+            const loop = btn.getAttribute('data-loop') === 'true';
+
+            // 清空原本播放器
+            playerArea.innerHTML = '';
+
+            let mediaElement;
+            if (type === 'video') {
+                mediaElement = document.createElement('video');
+                mediaElement.setAttribute('width', '720');
+                mediaElement.setAttribute('height', '405');
+                mediaElement.muted = true;  // 讓自動播放成功機率較高（瀏覽器政策）
+            } else {
+                mediaElement = document.createElement('audio');
+            }
+
+            mediaElement.id = 'media';
+            mediaElement.controls = true;
+            mediaElement.autoplay = true;
+
+            if (loop) {
+                mediaElement.loop = true;
+            }
+
+            const source = document.createElement('source');
+            source.src = src;
+            // 簡單猜測 MIME type
+            if (type === 'video') {
+                source.type = 'video/mp4';
+            } else {
+                source.type = 'audio/mpeg';
+            }
+
+            mediaElement.appendChild(source);
+            playerArea.appendChild(mediaElement);
+        });
+    });
+</script>
+</body>
+</html>
