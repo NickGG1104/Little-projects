@@ -1,4 +1,5 @@
-from auto_r2 import upload_one, upload_files
+from pathlib import Path
+from auto_r2 import upload_one, upload_files, main_download
 
 
 """
@@ -73,3 +74,18 @@ def test_upload_files_mix(tmp_path, monkeypatch):
 
     assert len(result['ok']) == 1
     assert len(result['fail']) == 1
+
+
+def test_main_download_calls_download_file(monkeypatch, tmp_path):
+    called = []
+
+    def fake_download_file(url, save_path):
+        called.append((url, save_path))
+
+    monkeypatch.setattr('auto_r2.download_file', fake_download_file)
+
+    files = ['cat.jpg', 'dog.jpg']
+    main_download(files)
+
+    assert called[0][0].endswith('/images/cat.jpg')  # 驗證 url & f 是否有串在一起
+    assert isinstance(called[0][1], Path)            # 驗證式普通字串還是 Path
