@@ -1,4 +1,4 @@
-import pytest
+import os, pytest
 from sqlalchemy import create_engine
 from werkzeug.security import check_password_hash
 
@@ -46,12 +46,18 @@ def client(test_app):
     return test_app.test_client()
 
 
-def login(client, username='admin', password='admin123', follow=False):
+def login(client, username=None, password=None, follow=False):
+    # 如果沒有指定就用環境變數
+    if username is None:
+        username = os.getenv('ADMIN_USERNAME', 'admin')
+    if password is None:
+        password = os.getenv('ADMIN_PASSWORD', 'admin123')
+
     return client.post(
         '/login',
         data={
             'username': username,
-            'password': password
+            'password': password,
         },
         follow_redirects=follow,
     )
@@ -66,7 +72,7 @@ def test_protected_requires_login(client):
 
 def test_login_success(client):
     """正確帳密可登入並 302 redirect"""
-    resp = login(client, 'admin', 'admin123', follow=False)
+    resp = login(client, follow=False)
     assert resp.status_code in (302, 303)
 
     from urllib.parse import urlsplit
@@ -77,7 +83,12 @@ def test_login_success(client):
 
 def test_login_failure(client):
     """錯誤密碼 -> 留在 login（200），不重導"""
-    resp = login(client, 'admin', 'wrong', follow=False)
+    resp = login(
+        client,
+        username=os.getenv('ADMIN_USERNAME', 'admin'),
+        password='wrong',
+        follow=False,
+    )
     assert resp.status_code == 200
     assert b'TPL:login.html' in resp.data
 
