@@ -1,15 +1,16 @@
-import os
+import os, requests
 import mimetypes
 import boto3
 from botocore.config import Config
 from typing import Iterable, Union
+from pathlib import Path
 
 
 # # # # # # # # # # # # # # # # # # # # # # # #
 #                 API Setting                 #
 # # # # # # # # # # # # # # # # # # # # # # # #
 ACCOUNT_ID = ''
-ENDPOINT   = f'https://{ACCOUNT_ID}.r2.cloudflarestorage.com'
+ENDPOINT   = f''
 ACCESS_KEY = ''
 SECRET_KEY = ''
 BUCKET     = 'temp'     # Bucket Name
@@ -74,18 +75,67 @@ def upload_files(paths: Iterable[Union[str, os.PathLike]]) -> dict:
     return result
 
 
+# 下載檔案
+def download_file(url: str, save_path: Path) -> None:
+    resp = requests.get(url, stream=True)
+    print('[DOWNLOAD] status:', resp.status_code)
+    print('[DOWNLOAD] cf-cache-status:', resp.headers.get('cf-cache-status'))
+    print('-' * 40)
+
+    if resp.ok:
+        with open(save_path, 'wb') as f:
+            for chunk in resp.iter_content(chunk_size=8192):  # 每次8KB (1024=1KB)
+                if chunk:
+                    f.write(chunk)
+        print('Saved to:', save_path.resolve())
+    else:
+        print('Download failed')
+
+
+def verify_cache(url: str) -> None:
+    resp = requests.get(url, stream=True)
+    print('[VERIFY] status        :', resp.status_code)
+    print('[VERIFY] cf-cache-status:', resp.headers.get('cf-cache-status'))
+    print('[VERIFY] cache-control  :', resp.headers.get('cache-control'))
+    print('[VERIFY] content-type   :', resp.headers.get('content-type'))
+    print('-' * 40)
+
+
 # # # # # # # # # # # # # # # # # # # # # # # #
 #                    Main                     #
 # # # # # # # # # # # # # # # # # # # # # # # #
-def main(files):
+def main_upload(files):
     summary = upload_files(files)
     print('\n=== Summary ===')
     print('Success:', len(summary['ok']))
     print('Failed :', len(summary['fail']))
 
 
+def main_download(files):
+    url = 'https://temp.xxxx.xx/images/'
+    path = Path('downloads')
+    for f in files:
+        download_file(f'{url}{f}', path / f)
+
+
+def main_verify(files):
+    url = 'https://temp.xxxx.xx/images/'
+    for f in files:
+        verify_cache(f'https://temp.xxxx.xx/images/{f}')
+
+
 if __name__ == '__main__':
-    main([
-        'images/cat.jpg',
-        'images/dog.jpg',
+    # main_upload([
+    #     'images/cat.jpg',
+    #     'images/dog.jpg',
+    # ])
+
+    # main_download([
+    #     'cat.jpg',
+    #     'dog.jpg'
+    # ])
+
+    main_verify([
+        'cat.jpg',
+        'dog.jpg'
     ])
