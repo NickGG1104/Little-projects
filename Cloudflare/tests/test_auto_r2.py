@@ -1,5 +1,9 @@
-import os
 from auto_r2 import upload_one, upload_files
+
+
+"""
+    python -m pytest -vv --html=reports/cloudflare.html --self-contained-html
+"""
 
 
 class DummyS3:
@@ -47,7 +51,8 @@ def test_upload_one_fail(tmp_path, monkeypatch):
     assert key.endswith('dog.jpg')
 
 
-def test_upload_files_mix(tmp_path, monkeypatch):  # 從這裡開始
+def test_upload_files_mix(tmp_path, monkeypatch):
+    # 模擬上傳兩個檔案
     f1 = tmp_path / 'a.jpg'
     f2 = tmp_path / 'b.jpg'
     f1.write_bytes(b'1')
@@ -59,8 +64,7 @@ def test_upload_files_mix(tmp_path, monkeypatch):  # 從這裡開始
 
         def upload_file(self, local_path, bucket, key, ExtraArgs=None):
             self.count += 1
-            # 第二次呼叫就故意失敗
-            if self.count == 2:
+            if self.count == 2:  # 第二次呼叫故意失敗，檢查是否正確分類
                 raise Exception('fail')
 
     monkeypatch.setattr('auto_r2.s3', DummyS3())
@@ -69,4 +73,3 @@ def test_upload_files_mix(tmp_path, monkeypatch):  # 從這裡開始
 
     assert len(result['ok']) == 1
     assert len(result['fail']) == 1
-    # ok / fail 裡的內容格式也可以一起檢查
