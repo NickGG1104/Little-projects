@@ -15,3 +15,11 @@ curl -svo NUL https://img.example.com/images/cat.jpg 2>&1 | findstr /i "cf-cache
 > cf-cache-status: DYNAMIC → Not CDN
 
 > cf-cache-status: HIT → CDN ( Run again if 'MISS' )
+
+[Github Link](https://github.com/NickGG1104/Little-projects/tree/main/Cloudflare)
+
+### 測試單元起手式
+* 對外保證什麼？
+* 有哪幾種結果？
+* 有碰外部資源嗎？
+* 哪裡最容易出錯？
