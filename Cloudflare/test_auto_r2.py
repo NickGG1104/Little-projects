@@ -1,12 +1,6 @@
 from pathlib import Path
 from auto_r2 import upload_one
 
-
-"""
-    python -m pytest -vv --html=reports/cloudflare.html --self-contained-html
-"""
-
-
 class DummyS3:
     def __init__(self):
         self.calls = []
@@ -23,6 +17,14 @@ def test_upload_one_success(tmp_path, monkeypatch):
     monkeypatch.setattr('auto_r2.s3', dummy)
 
     upload_one(f)
+
+
+@pytest.skip(reason="Need real Cloudflare R2 account info")
+def test_real_cloudflare_upload():
+    # 上傳
+    # 下載
+    # 驗證檔案一致
+    pass
 
 
 # 下載檔案
