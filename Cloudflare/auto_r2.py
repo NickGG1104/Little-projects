@@ -4,7 +4,7 @@ from typing import Union
 
 
 # # # # # # # # # # # # # # # # # # # # # # # #
-#                 Cloudfoare Setting                 #
+#                 boto3 Setting                 #
 # # # # # # # # # # # # # # # # # # # # # # # #
 ACCOUNT_ID  = os.environ['ACCOUNT_ID']
 ENDPOINT    = os.environ['ENDPOINT']
