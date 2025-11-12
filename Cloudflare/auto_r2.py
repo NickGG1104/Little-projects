@@ -9,13 +9,18 @@ from pathlib import Path
 # # # # # # # # # # # # # # # # # # # # # # # #
 #                 API Setting                 #
 # # # # # # # # # # # # # # # # # # # # # # # #
-ACCOUNT_ID = ''
-ENDPOINT   = f''
-ACCESS_KEY = ''
-SECRET_KEY = ''
+ACCOUNT_ID  = os.environ.get('ACCOUNT_ID')
+ENDPOINT    = os.environ.get('ENDPOINT') or (f'https://{ACCOUNT_ID}.r2.cloudflarestorage.com' if ACCOUNT_ID else None)
+ACCESS_KEY  = os.environ.get("ACCESS_KEY")
+SECRET_KEY  = os.environ.get("SECRET_KEY")
 BUCKET     = 'temp'     # Bucket Name
 KEY_PREFIX = 'images/'  # This Bucket's Folder Name
 
+"""bat
+    set ACCOUNT_ID=xxx
+    set ACCESS_KEY=xxx
+    set SECRET_KEY=xxx
+"""
 
 # # # # # # # # # # # # # # # # # # # # # # # #
 #                Create Client                #
@@ -80,7 +85,6 @@ def download_file(url: str, save_path: Path) -> None:
     resp = requests.get(url, stream=True)
     print('[DOWNLOAD] status:', resp.status_code)
     print('[DOWNLOAD] cf-cache-status:', resp.headers.get('cf-cache-status'))
-    print('-' * 40)
 
     if resp.ok:
         with open(save_path, 'wb') as f:
@@ -90,6 +94,7 @@ def download_file(url: str, save_path: Path) -> None:
         print('Saved to:', save_path.resolve())
     else:
         print('Download failed')
+    print('-' * 40)
 
 
 def verify_cache(url: str) -> None:
@@ -112,16 +117,16 @@ def main_upload(files):
 
 
 def main_download(files):
-    url = 'https://temp.xxxx.xx/images/'
+    url = 'https://temp.nickgg.com/images/'
     path = Path('downloads')
     for f in files:
         download_file(f'{url}{f}', path / f)
 
 
 def main_verify(files):
-    url = 'https://temp.xxxx.xx/images/'
+    url = 'https://temp.nickgg.com/images/'
     for f in files:
-        verify_cache(f'https://temp.xxxx.xx/images/{f}')
+        verify_cache(f'{url}{f}')
 
 
 if __name__ == '__main__':
