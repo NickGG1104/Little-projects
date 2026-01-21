@@ -3,6 +3,7 @@
 import re
 import pandas as pd
 import requests
+from datetime import datetime
 from fb_graphql_scraper.facebook_graphql_scraper import FacebookGraphqlScraper as fb_graphql_scraper
 
 # 移除 Excel 不接受的控制字元（保留 \n \r \t）
@@ -21,6 +22,7 @@ def _post_with_timeout(*args, **kwargs):
 requests.post = _post_with_timeout
 
 if __name__ == "__main__":
+    print(f'開始時間：{datetime.now().strftime("%Y/%m/%d %H:%M:%S")}')
     facebook_user_name = "326264037018"
     facebook_user_id = "326264037018"
     days_limit = 4405
@@ -53,5 +55,6 @@ if __name__ == "__main__":
     output_path = facebook_user_name + "_facebook_posts.xlsx"
     df.to_excel(output_path, index=False)
     print(f"已寫入 Excel：{output_path}，共 {len(df)} 筆")
-print("✅ Python 檔案成功執行")
+    print(f'結束時間：{datetime.now().strftime("%Y/%m/%d %H:%M:%S")}')
+    print("✅ Python 檔案成功執行")
 
