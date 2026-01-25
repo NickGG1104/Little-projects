@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 極速會議室 | Pro Design</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: #0f172a; 
+            color: #cbd5e1;
+            overflow-x: hidden;
+        }
+        
+        /* 背景動態流光 */
+        .bg-gradient-mesh {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1), transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.1), transparent 40%);
+        }
+
+        /* 玻璃擬態卡片 */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 輸入框優化 */
+        .modern-input {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f1f5f9; 
+            transition: all 0.3s ease;
+        }
+        .modern-input:focus {
+            border-color: #6366f1; 
+            background: rgba(15, 23, 42, 0.8);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); 
+            outline: none; 
+        }
+
+        /* 捲軸美化 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+
+        /* 按鈕特效 */
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            position: relative; overflow: hidden; transition: all 0.3s;
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 20px -8px rgba(79, 70, 229, 0.6); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        /* 訊息動畫 */
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .msg-enter { animation: slideUpFade 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+
+        .role-badge {
+            font-size: 0.6rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
+            padding: 4px 8px; border-radius: 6px;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 lg:p-6">
+
+    <div class="bg-gradient-mesh"></div>
+
+    <div id="app" class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6 h-[90vh] lg:h-auto">
+        
+        <div class="lg:col-span-4 flex flex-col gap-5 h-full overflow-y-auto pr-1 pb-10 lg:pb-0">
+            
+            <div class="flex items-center gap-4 py-2">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
+                    <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white tracking-tight">AI 極速會議室</h1>
+                    <p class="text-xs text-slate-400 font-medium">Auto-Negotiation System</p>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-5 space-y-4">
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">會議主題</label>
+                    <textarea v-model="form.topic" rows="2" class="modern-input w-full rounded-xl p-3 text-sm font-medium resize-none leading-relaxed" placeholder="輸入要討論的議題..."></textarea>
+                </div>
+                
+                <div class="flex gap-3">
+                    <div class="w-1/3 space-y-1.5">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">時長(分)</label>
+                        <input v-model="form.duration_minutes" type="number" step="0.5" class="modern-input w-full rounded-xl p-3 text-sm font-bold text-center">
+                    </div>
+                    <div class="flex-1 pt-6"> <button @click="startMeeting" :disabled="isRunning" class="btn-primary w-full h-[46px] rounded-xl text-white font-bold text-sm shadow-lg flex items-center justify-center gap-2">
+                            <span v-if="!isRunning">開始會議</span>
+                            <span v-else class="flex items-center gap-2">
+                                <svg class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                生成中...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <div class="flex items-center justify-between px-1">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">參與角色設定</span>
+                    <div class="h-px bg-slate-700/50 flex-1 ml-4"></div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-4 border-l-4 border-indigo-500 hover:bg-slate-800/40 transition-colors group">
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="role-badge bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Agent A</span>
+                        <select @change="applyPreset('A', $event.target.value)" class="bg-slate-900/50 text-[10px] text-slate-400 border border-slate-700 rounded-lg py-1 px-2 outline-none cursor-pointer hover:text-white transition-colors">
+                            <option value="">選擇模板 ▼</option>
+                            <option v-for="(role, key) in presets" :key="key" :value="key">{{ role.name }}</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-3 mb-3">
+                        <div class="relative w-10 h-10 shrink-0">
+                            <img :src="`https://api.dicebear.com/7.x/notionists/svg?seed=${form.agent_a_name}&backgroundColor=e0e7ff`" class="w-full h-full rounded-full bg-slate-800 border border-slate-600 object-cover">
+                            <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-indigo-500 rounded-full border-2 border-slate-800"></div>
+                        </div>
+                        <input v-model="form.agent_a_name" class="bg-transparent border-b border-slate-700 text-white font-bold text-sm w-full focus:border-indigo-500 focus:outline-none transition-colors h-8" placeholder="輸入名字">
+                    </div>
+                    <textarea v-model="form.agent_a_role" rows="3" class="w-full bg-slate-900/30 rounded-lg p-2.5 text-xs text-slate-300 border border-slate-700/50 focus:bg-slate-900/60 focus:border-indigo-500/50 outline-none resize-none transition-all placeholder-slate-600" placeholder="設定 A 的角色與立場..."></textarea>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-4 border-l-4 border-pink-500 hover:bg-slate-800/40 transition-colors group">
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="role-badge bg-pink-500/10 text-pink-400 border border-pink-500/20">Agent B</span>
+                        <select @change="applyPreset('B', $event.target.value)" class="bg-slate-900/50 text-[10px] text-slate-400 border border-slate-700 rounded-lg py-1 px-2 outline-none cursor-pointer hover:text-white transition-colors">
+                            <option value="">選擇模板 ▼</option>
+                            <option v-for="(role, key) in presets" :key="key" :value="key">{{ role.name }}</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-3 mb-3">
+                        <div class="relative w-10 h-10 shrink-0">
+                            <img :src="`https://api.dicebear.com/7.x/notionists/svg?seed=${form.agent_b_name}&backgroundColor=fce7f3`" class="w-full h-full rounded-full bg-slate-800 border border-slate-600 object-cover">
+                            <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-pink-500 rounded-full border-2 border-slate-800"></div>
+                        </div>
+                        <input v-model="form.agent_b_name" class="bg-transparent border-b border-slate-700 text-white font-bold text-sm w-full focus:border-pink-500 focus:outline-none transition-colors h-8" placeholder="輸入名字">
+                    </div>
+                    <textarea v-model="form.agent_b_role" rows="3" class="w-full bg-slate-900/30 rounded-lg p-2.5 text-xs text-slate-300 border border-slate-700/50 focus:bg-slate-900/60 focus:border-pink-500/50 outline-none resize-none transition-all placeholder-slate-600" placeholder="設定 B 的角色與立場..."></textarea>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="lg:col-span-8 flex flex-col gap-4 h-[600px] lg:h-[85vh]">
+            <div class="glass-panel rounded-3xl flex-1 flex flex-col overflow-hidden relative border border-slate-700/50">
+                <div class="h-12 border-b border-slate-700/50 flex items-center px-5 justify-between bg-slate-800/40 backdrop-blur-md shrink-0">
+                    <div class="flex gap-2">
+                        <div class="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></div>
+                    </div>
+                    <span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">Live Transcript</span>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth" ref="chatBox">
+                    <div v-if="logs.length === 0 && !isRunning" class="h-full flex flex-col items-center justify-center text-slate-600 opacity-60">
+                        <div class="w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center mb-4">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                        </div>
+                        <p class="text-sm font-medium">請設定主題並開始會議</p>
+                    </div>
+
+                    <div v-for="(log, index) in logs" :key="index" class="msg-enter">
+                        <div v-if="log.type === 'info'" class="flex items-center justify-center my-6">
+                            <span class="text-[10px] font-bold text-slate-500 bg-slate-900/60 px-4 py-1 rounded-full border border-slate-800/80">{{ log.content }}</span>
+                        </div>
+
+                        <div v-else :class="['flex gap-4 max-w-[85%]', log.speaker === form.agent_a_name ? '' : 'ml-auto flex-row-reverse']">
+                            <div class="shrink-0 flex flex-col items-center gap-1">
+                                <img :src="`https://api.dicebear.com/7.x/notionists/svg?seed=${log.speaker}&backgroundColor=${log.speaker === form.agent_a_name ? 'e0e7ff' : 'fce7f3'}`" 
+                                     class="w-9 h-9 rounded-full border border-white/10 shadow-lg bg-slate-800">
+                            </div>
+                            
+                            <div class="flex flex-col gap-1 min-w-0">
+                                <span :class="['text-[10px] font-bold uppercase tracking-wider opacity-50', log.speaker === form.agent_a_name ? 'text-left ml-1' : 'text-right mr-1']">
+                                    {{ log.speaker }}
+                                </span>
+                                <div :class="[
+                                    'px-5 py-3.5 rounded-2xl text-sm leading-7 shadow-sm backdrop-blur-sm border',
+                                    log.speaker === form.agent_a_name 
+                                        ? 'bg-slate-700/40 text-slate-100 rounded-tl-none border-slate-600/30' 
+                                        : 'bg-indigo-600/90 text-white rounded-tr-none border-indigo-400/30 bg-gradient-to-br from-indigo-600 to-indigo-700'
+                                ]">
+                                    {{ log.content }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="summary" class="glass-panel rounded-2xl p-5 border-l-4 border-emerald-500 animate-slide-up bg-slate-800/80 shadow-xl">
+                <h3 class="text-sm font-bold text-emerald-400 mb-2 flex items-center gap-2 uppercase tracking-wide">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Meeting Conclusion
+                </h3>
+                <div class="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap pl-1">{{ summary }}</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, nextTick } = Vue;
+
+        const ROLE_PRESETS = {
+            manager: { 
+                name: "Boss (主管)", 
+                role: "講究 ROI，思考邏輯極度銳利。要求每個人發言都要有具體的專案名稱。" 
+            },
+            pm: { 
+                name: "Sarah (PM)", 
+                role: "腦洞大開的熱血 PM。站在用戶角度思考，經常無視技術限制。個性過度樂觀，像個做夢家，覺得只要有 AI 什麼都能解決。今天的目標是讓大家發想出十個能節省人力的 AI Agent 專案。" 
+            },
+            hr: { 
+                name: "Emma (HR)", 
+                role: "過度關心氣氛的 HR。當大家快吵起來時，會突兀地插入要求大家『深呼吸』或『想一些快樂的事』。很怕大家過勞離職（因為她不想處理離職手續），講話溫柔到讓人覺得有點毛骨悚然。" 
+            },
+            dr_winston: { 
+                name: "Dr. Winston (溫博士)", 
+                role: "封裝廠的良率禪師。擁有 20 年後段製程經驗的資深處長。性格沉穩、溫和，講話富有哲理。他認為「變異（Variation）是自然的聲音」，不應該害怕它，而是要理解它。擅長用 ANOVA 和迴歸分析找出製程偏移的真因。當大家面對低良率感到焦慮時，他會笑著說：『讓數據說話，我們先看分佈圖，不要看平均值。』總是能讓團隊冷靜下來找到解決方案。" 
+            },
+            leo: { 
+                name: "Leo (熱血工程師)", 
+                role: "把產線當賽車場的熱血製程專家。專攻先進封裝（Advanced Packaging）與異質整合。性格陽光、語速快，對新技術充滿無限熱情。他最喜歡用 DOE (實驗設計) 來挑戰極限，把解決 Bump Crack 或 Warpage (翹曲) 問題當成解開高難度謎題。口頭禪是：『這機率檢定結果太漂亮了！這參數絕對能過！』他是團隊的強心針，相信沒有統計學解不開的製程難題。" 
+            },
+            claire: { 
+                name: "Claire (數據守護者)", 
+                role: "擁有黑帶大師資格 (Six Sigma Master Black Belt) 的品質專家。風格俐落、邏輯極度清晰，充滿自信。她雖然對 CPK/PPK 指標要求嚴格，但她會手把手教工程師如何透過統計檢定來證明製程改善的有效性。她總是鼓勵大家：『統計不是用來卡你們的，是用來保護你們的。』當她說『Reject Null Hypothesis』時，聽起來像是在宣判勝利，讓人感到無比安心。" 
+            },
+            yumi: { 
+                name: "Yumi (製程整合)", 
+                role: "擅長「說故事」的製程整合工程師 (PIE)。心思細膩，能從龐雜的封裝測試數據中，發現別人忽略的微小相關性。她不只看 P-value，更看物理意義。當製程與製造部門吵架時，她會溫柔地拿出 JMP 報表，用視覺化的圖表化解誤會：『大家別急，我們看這張交互作用圖 (Interaction Plot)，其實材料A跟溫度的搭配才是關鍵。』她是團隊的潤滑劑，讓統計數據變得有溫度。" 
+            },
+            engineer: { 
+                name: "Kevin (工程師)", 
+                role: "資深封裝製程工程師，對製程設備和自動化有深入了解。個性務實且注重細節，喜歡用數據來支持他的觀點。當討論到如何節省人力時，他會提出具體的技術方案，例如引入機器視覺檢測系統或自動化搬運機器人。"
+            },
+        };
+
+        createApp({
+            setup() {
+                const isRunning = ref(false);
+                const logs = ref([]);
+                const summary = ref("");
+                const chatBox = ref(null);
+                
+                const form = ref({
+                    topic: "發想十個對半導體封裝製程，節省人力有幫助的AI Agent專案。",
+                    duration_minutes: 2,
+                    agent_a_name: ROLE_PRESETS.manager.name,
+                    agent_a_role: ROLE_PRESETS.manager.role,
+                    agent_b_name: ROLE_PRESETS.engineer.name,
+                    agent_b_role: ROLE_PRESETS.engineer.role
+                });
+
+                const applyPreset = (agentType, key) => {
+                    if (!key) return;
+                    const selected = ROLE_PRESETS[key];
+                    if (agentType === 'A') {
+                        form.value.agent_a_name = selected.name;
+                        form.value.agent_a_role = selected.role;
+                    } else {
+                        form.value.agent_b_name = selected.name;
+                        form.value.agent_b_role = selected.role;
+                    }
+                };
+
+                const startMeeting = async () => {
+                    if (!form.value.topic) return;
+                    isRunning.value = true; logs.value = []; summary.value = "";
+                    
+                    logs.value.push({type: 'info', content: '正在初始化 AI 代理人...'});
+
+                    try {
+                        const res = await fetch('http://localhost:8000/start-meeting', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify(form.value)
+                        });
+
+                        const reader = res.body.getReader();
+                        const decoder = new TextDecoder();
+
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) break;
+                            const lines = decoder.decode(value, {stream:true}).split('\n\n');
+                            for (const line of lines) {
+                                if (line.startsWith('data: ')) {
+                                    const jsonStr = line.replace('data: ', '');
+                                    if (jsonStr === '[DONE]') break;
+                                    try {
+                                        const data = JSON.parse(jsonStr);
+                                        if (data.type === 'summary') summary.value = data.content;
+                                        else {
+                                            logs.value.push(data);
+                                            nextTick(() => chatBox.value && (chatBox.value.scrollTop = chatBox.value.scrollHeight));
+                                        }
+                                    } catch(e){}
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        logs.value.push({type: 'info', content: '⚠️ 後端連線失敗 (Demo Mode)'});
+                    } finally { isRunning.value = false; }
+                };
+
+                return { form, isRunning, logs, summary, startMeeting, chatBox, presets: ROLE_PRESETS, applyPreset };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
